@@ -81,6 +81,7 @@ def check_existing_category(category_name, category_type):
                     return True  # 중복되는 카테고리가 있음
     return False
 
+# 안녕하세요
 # 카테고리 추가
 def category_add(category_name, category_type):
     # 중복 검사
