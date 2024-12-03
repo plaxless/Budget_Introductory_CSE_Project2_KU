@@ -6,15 +6,12 @@ import pandas as pd
 
 INDEX = 0
 DATE = 1
-CATEGORY= 2
-PRICE = 3
-INFORMATION = 4
+CATEGORY= 3
+PRICE = 2
 COMMEND_INPUT = 0
 DATE_INPUT = 1
-CATEGORY_INPUT = 2
-PRICE_INPUT = 3
-INFORMATION_INPUT = 4
-
+CATEGORY_INPUT = 3
+PRICE_INPUT = 2
 
 #파일 유효성 검사
 def is_valid_csv():
@@ -473,7 +470,7 @@ def print_specific_category():
 def add_to_category(income_expense_input, validate_income_expense):
     updated_rows = []  # 업데이트된 내용을 저장할 리스트
     category_found = False  # 카테고리가 발견되었는지 여부를 추적하는 변수
-    category_name = income_expense_input[CATEGORY_INPUT]  # 입력된 카테고리 이름
+    category_validated = 0
 
     # 금액 입력값을 확인하고 정수로 변환
     try:
@@ -508,13 +505,54 @@ def add_to_category(income_expense_input, validate_income_expense):
                     else:
                         amount = 0  # 두 번째 열이 없으면 금액을 0으로 처리
 
-                    # 해당 카테고리가 맞고, 올바른 섹션인지 확인
-                    if category == category_name and current_section == validate_income_expense:
-                        amount += amount_to_add  # 금액 업데이트
-                        category_found = True  # 카테고리 발견
+                    
+                    # is_error = False
+                    i = 0
+                    start_category = False
+
+                    while(not category_found):
+                        category_name = income_expense_input[CATEGORY_INPUT + i]  # 입력된 카테고리 이름
+                    
+
+                        # 아무 카테고리에도 속하지 않을 경우
+                        if category_name == "[]":
+                            category_found = True
+
+                        # 맨 처음 괄호
+                        try:
+                            if category_name[0] == "[":
+                                category_name = category_name[1:]
+                                start_category = True
+                        except IndexError:
+                            # 빈 문자열일 경우
+                            #is_error = True
+                            return False
+
+                        # 맨 마지막 괄호
+                        try:
+                            if category_name[len(category_name) - 1] == "]" and start_category:
+                                category_name = category_name[:-1]
+                                category_count = i + 1
+                        except IndexError:
+                            # is_error = True
+                            return False
+
+                        # 해당 카테고리가 맞고, 올바른 섹션인지 확인
+                        if category == category_name and current_section == validate_income_expense:
+                            amount += amount_to_add  # 금액 업데이트  
+                            category_validated += 1
+                            if category_count == category_validated:
+                                category_found = True
+                        
+                        i += 1
+                        # 입력받은 카테고리가 없을 경우
+                        if len(income_expense_input) <= CATEGORY_INPUT + i:
+                            break
+
 
                     # 업데이트된 행 추가
                     updated_rows.append([category, amount])
+
 
     # 카테고리를 찾지 못했을 경우 False 반환
     if not category_found:
@@ -608,9 +646,9 @@ def validate_number(income_expense_input):
 
     return True
 
-# 입력받은 열의 개수가 4,5개인지 확인
+# 입력받은 열의 개수가 1개인지 아닌지 (dir, home 여부) 확인
 def validate_length(income_expense_input):
-    if len(income_expense_input) != 4 and len(income_expense_input) != 5:
+    if len(income_expense_input) == 1:
         return False
     return True
 
@@ -685,7 +723,7 @@ def inex_period_records():
     if (len(income_records) > 0):
     # 수입 출력
         print("수입")
-        print("수입 내역 번호 / 날짜 / 금액 / 사유")
+        print("번호 날짜 / 금액 / 사유")
         for index, record in enumerate(income_records, start=1):
             if len(record) == 5:
                 if "*" in record[2]:
@@ -702,6 +740,13 @@ def inex_period_records():
                     print(f"{index} {record[1]} '없음'")
                 else:
                     print(f"{index} {record[1]} {record[2]}")
+            elif len(record) > 5:
+                print(f"{index}",end=" ")
+                for i,records in enumerate(record):
+                    if i == 0:
+                        continue
+                    print(f"{records}",end=" ")
+                print()
             elif len(record) == 0:
                 print("내역이 없습니다.")
             else:
@@ -711,7 +756,7 @@ def inex_period_records():
     if (len(expense_records) > 0):
     # 지출 출력
         print("\n지출")
-        print("지출 내역 번호 / 날짜 / 금액 / 사유")
+        print("지출 내역 번호 / 날짜 / 카테고리 / 금액 / 사유")
         for index, record in enumerate(expense_records, start=len(income_records) + 1):  # 수입 내역 번호 이후부터 시작
             if len(record) == 5:
                 if "*" in record[2]:
@@ -730,6 +775,13 @@ def inex_period_records():
                     print(f"{index} {record[1]} {record[2]}")
             elif len(record) == 0:
                 print("내역이 없습니다.")
+            elif len(record) > 5:
+                print(f"{index}",end=" ")
+                for i,records in enumerate(record):
+                    if i == 0:
+                        continue
+                    print(f"{records}",end=" ")
+                print()
             else:
                 print("출력 오류")
         return -2
@@ -805,7 +857,7 @@ while(1):
     if menu == '1':
       income_expense_input = income_expense_menu()
       while(1):
-            # 입력받은 열의 개수가 4,5개인지 확인
+          # 입력받은 열의 개수가 1개인지 아닌지 (dir, home 여부) 확인
           if (validate_length(income_expense_input)):
               if income_expense_input[COMMEND_INPUT] == 'i' or income_expense_input[COMMEND_INPUT] == 'income' :
                     # 유효한 날짜 형식인지, 가격 형식인지 확인
