@@ -148,9 +148,6 @@ def category_remove(category_name, category_type):
     with open(filename, 'w', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(updated_entries)
-        
-import csv
-import re
 
 # 카테고리 목록 출력 함수
 def category_list_print():
