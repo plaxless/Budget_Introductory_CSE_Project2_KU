@@ -2,6 +2,7 @@ import csv
 import re
 from datetime import datetime
 import os
+import ast
 import pandas as pd
 
 INDEX = 0
@@ -422,9 +423,16 @@ def print_date():
                         print("문법형식에 맞게 다시 입력해주세요.")
                         continue
         print("문법형식에 맞게 다시 입력해주세요.")
+        
+    category_num = print_specific_category()
+    if (not category_num == '*'):
+        for entry in plist[:]:
+            if category_num not in entry[3]:
+                plist.remove(entry)
+
     for i in plist[:]:
-        if i[1][0:4]!=year:
-            plist.remove(i)
+            if i[1][0:4]!=year:
+                plist.remove(i)
     if month!=00:
         for i in plist[:]:
             if i[1][5:7]!=month:
@@ -436,8 +444,12 @@ def print_date():
             check = pd.to_datetime(i[1]).weekofyear
             if date!=check:
                 plist.remove(i)
+                
+    
+    
     count=1
-    print('번호  날짜  수입액 지출액 [카테고리(들)] 사유')
+
+    print('\n번호  날짜  수입액 지출액 [카테고리(들)] 사유')
     for i in plist:
         print(count, end=' ')
         count+=1
@@ -470,16 +482,23 @@ def print_date():
 #기간별 출력 (+특정 카테고리)
 def print_specific_category():
     while (1):
-        specific_category_input = int(input("특정 카테고리만 출력하시겠습니까? (맞으면 y/ 아니면 n) : "))
+        specific_category_input = input("특정 카테고리만 출력하시겠습니까? (맞으면 y/ 아니면 n) : ")
         if specific_category_input == 'y':
-            print("hi")
+            display_list = category_list_print()
+            print("\n카테고리가 삭제된 항목을 출력하고 싶으시면 0을 입력해주세요.")
+            category_num = input("출력할 카테고리의 번호를 입력해주세요 : ")
+            while(re.fullmatch(r'^[0-9]\d*$',category_num) and int(category_num) <= len(display_list)):
+                if (category_num == '0'):
+                    return '[]'
+                return display_list[int(category_num) - 1].get('name')
+            print("잘못된 값을 입력하엿습니다. 다시 입력해주세요. \n")
         elif specific_category_input == 'n':
-            return;
+            print()
+            return '*';
         else:
             print("잘못된 값을 입력하였습니다. 다시 입력해주세요.\n")
         
 #카테고리별 추가
-
 def add_to_category(income_expense_input, validate_income_expense):
     updated_rows = []  # 업데이트된 내용을 저장할 리스트
     category_found = False  # 카테고리가 발견되었는지 여부를 추적하는 변수
