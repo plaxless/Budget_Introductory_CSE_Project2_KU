@@ -381,11 +381,13 @@ def print_date():
     rdr = csv.reader(f)
     plist=[]
     for i in rdr:
+        i.append('수입')
         plist.append(i)
     f1=open('expense.csv','r',encoding='utf-8')
     rdr = csv.reader(f1)
     list1=[]
     for i in rdr:
+        i.append('지출')
         list1.append(i)
     plist.extend(list1)
     plist = sorted(plist, key=lambda plist: (plist[1], plist[0]))
@@ -435,19 +437,30 @@ def print_date():
             if date!=check:
                 plist.remove(i)
     count=1
+    print('번호  날짜  수입액 지출액 [카테고리(들)] 사유')
     for i in plist:
         print(count, end=' ')
         count+=1
         print(i[1], end=' ')
-        if "*" in i[2]:
-            print('\'없음\'', end=' ')
+        if i[len(i)-1]=='수입':
+            print(i[2]+'    ', end=' ')
         else:
-            print(i[2], end=' ')
-        print(i[3], end=' ')
-        if len(i)==5:
-            print(i[4])
+            print('    '+i[2], end=' ')
+        for j in i[3:]:
+            if ']' in j:
+                if '[' not in j:
+                    print(','+j, end=' ')
+                else:
+                    print(j, end=' ')
+                break
+            if '[' in j:
+                print(j, end='')
+            else:
+                print(','+j, end='')
+        if ']' not in i[len(i)-2]:
+            print(i[len(i)-2])
         else:
-            print('')
+            print()
     print("\n=======================\n")
     print("i/income 수입 추가하기")
     print("e/expense 지출 추가하기")
